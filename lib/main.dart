@@ -40,8 +40,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _chatController = TextEditingController();
+  final _focusNode = FocusNode();
   late ScrollController _scrollController;
   late List<Ticker> tickers;
+  List<String> chatHistory = [];
 
   Future<void> _loadTickers() async {
     /*List<Ticker> loadedTickers = await requestTickerAll();
@@ -60,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -71,7 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0.0,
         scrolledUnderElevation: 0.0,
-        title: Image.asset('images/logo_orange.png', height: 32.0),
+        centerTitle: false,
+        title: Image.asset('assets/images/logo_orange.png'),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -80,10 +84,17 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TitleContainer(
+              const TitleContainer(
                 title: '에디터의 코멘트',
                 subtitle: '실시간으로 분석한 모든 가상화폐의 가격 추세를 알아보세요.',
-                widget: Container(),
+                widget: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Text('Comment 1 : 내용은 이렇게 출력됩니다.', style: TextStyle(color: Colors.white)),
+                    Text('Comment 2 : 내용은 이렇게 출력됩니다.', style: TextStyle(color: Colors.white)),
+                    Text('Comment 3 : 내용은 이렇게 출력됩니다.', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
               ),
               const SizedBox(height: 16.0),
               TitleContainer(
@@ -100,10 +111,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       Expanded(
                         child: ListView.separated(
-                          itemCount: 30,
+                          itemCount: chatHistory.length,
                           separatorBuilder: (context, index) => const SizedBox(height: 8.0),
                           itemBuilder: (context, index) {
-                            return const Text('텍스트', style: TextStyle(color: Colors.white));
+                            return Text(
+                              chatHistory[index],
+                              style: const TextStyle(color: Colors.white),
+                              textAlign: TextAlign.right,
+                            );
                           },
                         ),
                       ),
@@ -112,6 +127,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         height: 40.0,
                         child: TextField(
                           controller: _chatController,
+                          focusNode: _focusNode,
+                          onSubmitted: (value) {
+                            String message = _chatController.text;
+                            if (message.isNotEmpty) {
+                              _chatController.clear();
+                              setState(() {
+                                chatHistory.add(message);
+                                FocusScope.of(context).requestFocus(_focusNode);
+                              });
+                            }
+                          },
                           style: const TextStyle(color: Colors.white, fontSize: 12.0),
                           decoration: const InputDecoration(
                             hintText: 'GPT 어드바이저에게 궁금한 점을 물어보세요.',

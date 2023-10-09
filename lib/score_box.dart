@@ -1,3 +1,4 @@
+import 'package:cryptomap/line_chart_sample.dart';
 import 'package:flutter/material.dart';
 
 class ScoreBox extends StatelessWidget {
@@ -21,6 +22,7 @@ class ScoreBox extends StatelessWidget {
         children: <Widget>[
           Text(symbol, style: const TextStyle(color: Colors.white, fontSize: 32.0)),
           Text('$score', style: const TextStyle(color: Colors.white, fontSize: 18.0)),
+          const LineChartSample2(),
         ],
       ),
     );
