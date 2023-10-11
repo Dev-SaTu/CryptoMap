@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cryptomap/score_box.dart';
 import 'package:cryptomap/synctree.dart';
 import 'package:cryptomap/ticker.dart';
@@ -5,7 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'title_container.dart';
 
-void main() {
+Future<void> main() async {
   runApp(const MyApp());
 }
 
@@ -42,21 +44,21 @@ class _MyHomePageState extends State<MyHomePage> {
   final _chatController = TextEditingController();
   final _focusNode = FocusNode();
   late ScrollController _scrollController;
-  late List<Ticker> tickers;
+  late List<Ticker> tickers = [];
   List<String> chatHistory = [];
 
   Future<void> _loadTickers() async {
-    /*List<Ticker> loadedTickers = await requestTickerAll();
+    List<Ticker> loadedTickers = await requestTickerAll();
     setState(() {
       tickers = loadedTickers;
-    });*/
+    });
   }
 
   @override
   void initState() {
-    super.initState();
     _scrollController = ScrollController();
     _loadTickers();
+    super.initState();
   }
 
   @override
@@ -164,13 +166,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
                       shrinkWrap: true,
-                      itemBuilder: (context, index) => const ScoreBox(symbol: 'BTC', score: 3746600),
-                      itemCount: 20,
-                      /*itemBuilder: (context, index) {
+                      itemBuilder: (context, index) {
                         final ticker = tickers[index];
                         return ScoreBox(symbol: ticker.symbol, score: double.parse(ticker.closingPrice));
                       },
-                      itemCount: tickers.length,*/
+                      itemCount: tickers.length,
                       separatorBuilder: (context, index) => const SizedBox(width: 8.0),
                     ),
                   ),
