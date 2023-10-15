@@ -64,6 +64,7 @@ flutter:
   assets:
     - assets/images/logo_grey.png
     - assets/images/logo_orange.png
+    - assets/images/synctree.jpg
 
   fonts:
     - family: Pretendard

@@ -10,6 +10,20 @@ Future<void> main() async {
   print(result2);
 }
 
+Future<String> requestAdvise(String message) async {
+  const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
+  const headers = {
+    'X-Synctree-Plan-ID': 'cd3d4b601791452d0adc459b8f1f74be4ec1487cd89275fb4a1a068dc3e91bbb',
+    'X-Synctree-Plan-Environment': 'production',
+    'X-Synctree-Bizunit-Version': '1.0',
+    'X-Synctree-Revision-ID': '3b2b27b9e2251b9cde7f5fd869a3fa2763bb71b2a26eacd3cfdff1875055218c',
+    'Content-Type': 'application/json',
+  };
+  final body = jsonEncode({'message': message});
+
+  return await _sendRequest(endpoint, headers, body);
+}
+
 Future<String> requestSymbolScore(String symbol) async {
   const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
   const headers = {
