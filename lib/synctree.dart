@@ -2,14 +2,6 @@ import 'dart:convert';
 import 'package:cryptomap/ticker.dart';
 import 'package:http/http.dart' as http;
 
-Future<void> main() async {
-  // final result1 = await requestSymbolScore('BTC');
-  // print(result1);
-
-  final result2 = await requestTickerAll();
-  print(result2);
-}
-
 Future<String> requestAdvise(String message) async {
   const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
   const headers = {
@@ -21,7 +13,11 @@ Future<String> requestAdvise(String message) async {
   };
   final body = jsonEncode({'message': message});
 
-  return await _sendRequest(endpoint, headers, body);
+  final response = await _sendRequest(endpoint, headers, body);
+  final result = jsonDecode(response);
+  final content = result['result'][0]['message']['content'];
+
+  return content;
 }
 
 Future<String> requestSymbolScore(String symbol) async {
@@ -61,5 +57,5 @@ Future<List<Ticker>> requestTickerAll() async {
 
 Future<String> _sendRequest(String url, Map<String, String> headers, String? body) async {
   final response = await http.post(Uri.parse(url), headers: headers, body: body);
-  return response.body;
+  return utf8.decode(response.bodyBytes);
 }

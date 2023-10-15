@@ -46,6 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late ScrollController _scrollController;
   late List<Ticker> tickers = [];
   List<String> chatHistory = [];
+  bool _chatEnabled = true;
 
   Future<void> _loadTickers() async {
     List<Ticker> loadedTickers = await requestTickerAll();
@@ -60,10 +61,14 @@ class _MyHomePageState extends State<MyHomePage> {
       _chatController.clear();
       setState(() {
         chatHistory.add(message);
-        FocusScope.of(context).requestFocus(_focusNode);
+        _chatEnabled = false;
       });
       final answer = await requestAdvise(message);
-      print(answer);
+      setState(() {
+        chatHistory.add(answer);
+        _chatEnabled = true;
+        FocusScope.of(context).requestFocus(_focusNode);
+      });
     }
   }
 
@@ -156,8 +161,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         itemBuilder: (context, index) {
                           return Text(
                             chatHistory[index],
-                            style: const TextStyle(color: Colors.white),
-                            textAlign: TextAlign.right,
+                            style: const TextStyle(color: Colors.white, fontSize: 9.0),
+                            textAlign: index % 2 == 0 ? TextAlign.right : TextAlign.left,
                           );
                         },
                       ),
@@ -166,12 +171,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(
                       height: 40.0,
                       child: TextField(
+                        enabled: _chatEnabled,
                         controller: _chatController,
                         focusNode: _focusNode,
                         onSubmitted: (value) => _requestAdvise(),
                         style: const TextStyle(color: Colors.white, fontSize: 12.0),
                         decoration: InputDecoration(
-                          hintText: '궁금한 점을 물어보세요.',
+                          hintText: _chatEnabled ? '궁금한 점을 물어보세요.' : '답변을 생각하고 있어요.',
                           hintStyle: const TextStyle(color: Colors.grey, fontSize: 12.0),
                           suffix: IconButton(onPressed: () => _requestAdvise(), icon: const Icon(Icons.send, color: Colors.white)),
                         ),
