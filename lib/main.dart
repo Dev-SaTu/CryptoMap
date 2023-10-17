@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       tickers = loadedTickers;
       scores = List.generate(tickers.length, (index) => 1.0);
-      candlesticks = List.generate(tickers.length, (index) => List.generate(10, (index) => List.generate(6, (index) => 0.0)));
+      candlesticks = List.generate(tickers.length, (index) => List.generate(10, (index) => List.generate(6, (index) => 5.0)));
     });
   }
 
@@ -123,8 +123,8 @@ class _MyHomePageState extends State<MyHomePage> {
               Container(height: 50.0, color: Colors.black, child: Center(child: Image.asset('assets/images/synctree_black.png'))),
               const SizedBox(height: 16.0),
               TitleContainer(
-                title: '계좌',
-                subtitle: '현재 계좌 잔고와 투자 추천 금액을 알아보세요.',
+                title: '나의 자산',
+                subtitle: '현재 나의 자산별 투자 추천 금액을 알려드려요.',
                 widget: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
@@ -132,10 +132,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       const Center(child: SizedBox(width: 40.0, child: CircularProgressIndicator()))
                     else ...[
                       Text(balance!.productName, style: const TextStyle(color: Colors.grey)),
-                      Text(NumberFormat('#,### 원').format(balance?.balance), style: const TextStyle(color: Colors.white, fontSize: 18.0)),
+                      Text(NumberFormat('#,### 원').format(balance?.balance), style: const TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8.0),
-                      const Text('투자 추천 금액', style: TextStyle(color: Colors.grey)),
-                      Text(NumberFormat('#,### 원').format(balance!.balance * 0.1), style: const TextStyle(color: Colors.white, fontSize: 18.0)),
+                      const Text('투자 추천 금액 (10%)', style: TextStyle(color: Colors.grey)),
+                      Text(NumberFormat('#,### 원').format(balance!.balance * 0.1), style: const TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold)),
                     ],
                   ],
                 ),
@@ -143,36 +143,54 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 16.0),
               TitleContainer(
                 title: '실시간 코멘트',
-                subtitle: 'CryptoMap 에디터가 자산 분배 코멘트를 제공해드려요.',
-                widget: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    PieChartSample2(data: <PieChartSectionData>[
-                      PieChartSectionData(color: Colors.redAccent, title: 'BTC', value: 0.4, showTitle: false),
-                      PieChartSectionData(color: Colors.orangeAccent, title: 'ETH', value: 0.2, showTitle: false),
-                      PieChartSectionData(color: Colors.yellowAccent, title: 'XRP', value: 0.2, showTitle: false),
-                      PieChartSectionData(color: Colors.greenAccent, title: 'BCH', value: 0.1, showTitle: false),
-                      PieChartSectionData(color: Colors.blueAccent, title: 'TRX', value: 0.1, showTitle: false),
-                    ]),
-                    Text('BTC 40.0% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.4)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    Text('ETH 20.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    Text('XRP 20.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    Text('BCH 10.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.1)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    Text('TRX 10.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.1)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
+                subtitle: 'CryptoMap 에디터가 실시간 추천 종목을 알려드려요.',
+                widget: FutureBuilder(
+                  future: requestBalancePie(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      Map<String, dynamic>? result = snapshot.data;
+                      final data = result?['result'] as List<dynamic>;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          PieChartSample2(data: <PieChartSectionData>[
+                            PieChartSectionData(color: Colors.redAccent, title: (data[0] as Map).keys.first, value: (data[0][(data[0] as Map).keys.first]), showTitle: false),
+                            PieChartSectionData(color: Colors.orangeAccent, title: (data[1] as Map).keys.first, value: (data[1][(data[1] as Map).keys.first]), showTitle: false),
+                            PieChartSectionData(color: Colors.yellowAccent, title: (data[2] as Map).keys.first, value: (data[2][(data[2] as Map).keys.first]), showTitle: false),
+                            PieChartSectionData(color: Colors.greenAccent, title: (data[3] as Map).keys.first, value: (data[3][(data[3] as Map).keys.first]), showTitle: false),
+                            PieChartSectionData(color: Colors.blueAccent, title: (data[4] as Map).keys.first, value: (data[4][(data[4] as Map).keys.first]), showTitle: false),
+                          ]),
+                          Text('현재 가장 추천드리는 종목은 ${(data[0] as Map).keys.first} 입니다.', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text('${(data[0] as Map).keys.first} ${NumberFormat('#0.0').format(100.0 * (data[0][(data[0] as Map).keys.first]))}% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.4)}',
+                              style: const TextStyle(color: Colors.white)),
+                          Text('${(data[1] as Map).keys.first} ${NumberFormat('#0.0').format(100.0 * (data[1][(data[1] as Map).keys.first]))}% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.2)}',
+                              style: const TextStyle(color: Colors.white)),
+                          Text('${(data[2] as Map).keys.first} ${NumberFormat('#0.0').format(100.0 * (data[2][(data[2] as Map).keys.first]))}% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.2)}',
+                              style: const TextStyle(color: Colors.white)),
+                          Text('${(data[3] as Map).keys.first} ${NumberFormat('#0.0').format(100.0 * (data[3][(data[3] as Map).keys.first]))}% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.1)}',
+                              style: const TextStyle(color: Colors.white)),
+                          Text('${(data[4] as Map).keys.first} ${NumberFormat('#0.0').format(100.0 * (data[4][(data[4] as Map).keys.first]))}% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.1)}',
+                              style: const TextStyle(color: Colors.white)),
+                        ],
+                      );
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: 16.0),
               TitleContainer(
-                title: '추세 분석',
-                subtitle: '기술적 분석을 이용한 가상화폐 가격 추이를 알아보세요.\n1.0 이상',
+                title: 'CryptoMap 스코어',
+                subtitle: 'AI 기반 분석으로 종목별 점수를 알려드려요.\n(1.0 < 스코어) 면 상승, (1.0 > 스코어) 면 하락',
                 widget: Scrollbar(
                   controller: _scrollController,
                   thumbVisibility: true,
                   child: Container(
                     height: 300.0,
                     decoration: BoxDecoration(
-                      // color: const Color.fromRGBO(0, 0, 0, 1.0),
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -201,7 +219,26 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                Text(NumberFormat('#.##').format(scores[index]), style: const TextStyle(color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold)),
+                                Column(
+                                  children: <Widget>[
+                                    Text(NumberFormat('0.0000').format(scores[index]), style: const TextStyle(color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      scores[index] > 1.0
+                                          ? '상승'
+                                          : scores[index] < 1.0
+                                              ? '하락'
+                                              : '횡보',
+                                      style: TextStyle(
+                                          color: scores[index] > 1.0
+                                              ? Colors.lightGreenAccent
+                                              : scores[index] < 1.0
+                                                  ? Colors.redAccent
+                                                  : Colors.grey,
+                                          fontSize: 12.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(width: 16.0),
                                 Expanded(child: LineChartSample2(data: candlesticks[index])),
                               ],
@@ -209,11 +246,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           ],
                           onExpansionChanged: (value) async {
                             if (value) {
-                              final scoreData = await requestSymbolScore(ticker.symbol);
-                              setState(() {
-                                scores[index] = scoreData['score'];
-                                candlesticks[index] = (scoreData['candlestick'] as List<dynamic>).cast<List<dynamic>>();
-                              });
+                              if (scores[index] == 1.0) {
+                                // Temporal
+                                final scoreData = await requestSymbolScore(ticker.symbol);
+                                setState(() {
+                                  scores[index] = scoreData['score'];
+                                  candlesticks[index] = (scoreData['candlestick'] as List<dynamic>).cast<List<dynamic>>();
+                                });
+                              }
                             }
                           },
                         );

@@ -11,25 +11,30 @@ class LineChartSample2 extends StatefulWidget {
 }
 
 class _LineChartSample2State extends State<LineChartSample2> {
-  List<double> prices = List.generate(10, (index) => 0.0);
+  List<double> prices = List.generate(10, (index) => 5.0);
   List<Color> gradientColors = [Colors.cyan, Colors.blue];
 
   List<double> normalizePrices(List<double> prices) {
     double maxValue = prices.reduce((curr, next) => curr > next ? curr : next);
     double minValue = prices.reduce((curr, next) => curr < next ? curr : next);
 
-    return prices.map((price) => ((price - minValue) / (maxValue - minValue)) * 9.0).toList();
+    if (maxValue == minValue) {
+     return List.generate(10, (index) => 5.0);
+    } else {
+      return prices.map((price) => ((price - minValue) / (maxValue - minValue)) * 9.0).toList();
+    }
   }
 
   @override
   void initState() {
-    for (int i = 0; i < 10; i++) {
+    int size = widget.data.length;
+    for (int i = 0; i < prices.length; i++) {
       double value;
 
-      if (widget.data[i][2] is String) {
-        value = double.parse(widget.data[i][2]);
-      } else if (widget.data[i][2] is double) {
-        value = widget.data[i][2];
+      if (widget.data[size - 1 - i][2] is String) {
+        value = double.parse(widget.data[size - 1 - i][2]);
+      } else if (widget.data[size - 1 - i][2] is double) {
+        value = widget.data[size - 1 - i][2];
       } else {
         throw FormatException("Unsupported data type for value at index $i");
       }
@@ -63,10 +68,10 @@ class _LineChartSample2State extends State<LineChartSample2> {
         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, interval: 1, reservedSize: 42)),
       ),
       borderData: FlBorderData(show: false, border: Border.all(color: const Color(0xff37434d))),
-      minX: 0,
-      maxX: 6,
-      minY: 0,
-      maxY: 6,
+      minX: 0.0,
+      maxX: 10.0,
+      minY: 0.0,
+      maxY: 10.0,
       lineBarsData: [
         LineChartBarData(
           spots: List.generate(10, (index) => FlSpot(index.toDouble(), prices[index])),

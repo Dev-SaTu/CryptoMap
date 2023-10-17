@@ -38,7 +38,7 @@ Future<Balance> requestKB() async {
   return balance;
 }
 
-Future<Map<String, dynamic>> requestBalancePie(String symbol) async {
+Future<Map<String, dynamic>> requestBalancePie() async {
   const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
   const headers = {
     'X-Synctree-Plan-ID': '36eb8c28e01bd1980ed862e4bee3cc56bad113293b405933befbb01ff307c909',
