@@ -2,23 +2,47 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class LineChartSample2 extends StatefulWidget {
-  const LineChartSample2({super.key});
+  const LineChartSample2({super.key, required this.data});
+
+  final List<List<dynamic>> data;
 
   @override
   State<LineChartSample2> createState() => _LineChartSample2State();
 }
 
 class _LineChartSample2State extends State<LineChartSample2> {
-  List<Color> gradientColors = [
-    Colors.cyan,
-    Colors.blue,
-  ];
+  List<double> prices = List.generate(10, (index) => 0.0);
+  List<Color> gradientColors = [Colors.cyan, Colors.blue];
+
+  List<double> normalizePrices(List<double> prices) {
+    double maxValue = prices.reduce((curr, next) => curr > next ? curr : next);
+    double minValue = prices.reduce((curr, next) => curr < next ? curr : next);
+
+    return prices.map((price) => ((price - minValue) / (maxValue - minValue)) * 9.0).toList();
+  }
+
+  @override
+  void initState() {
+    for (int i = 0; i < 10; i++) {
+      double value;
+
+      if (widget.data[i][2] is String) {
+        value = double.parse(widget.data[i][2]);
+      } else if (widget.data[i][2] is double) {
+        value = widget.data[i][2];
+      } else {
+        throw FormatException("Unsupported data type for value at index $i");
+      }
+
+      prices[i] = value;
+    }
+    prices = normalizePrices(prices);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[AspectRatio(aspectRatio: 1.70, child: LineChart(mainData()))],
-    );
+    return Stack(children: <Widget>[AspectRatio(aspectRatio: 1.70, child: LineChart(mainData()))]);
   }
 
   LineChartData mainData() {
@@ -45,15 +69,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
       maxY: 6,
       lineBarsData: [
         LineChartBarData(
-          spots: const [
-            FlSpot(0, 3),
-            FlSpot(1, 2),
-            FlSpot(2, 5),
-            FlSpot(3, 3.1),
-            FlSpot(4, 4),
-            FlSpot(5, 3),
-            FlSpot(6, 5),
-          ],
+          spots: List.generate(10, (index) => FlSpot(index.toDouble(), prices[index])),
           isCurved: true,
           gradient: LinearGradient(colors: gradientColors),
           barWidth: 3,

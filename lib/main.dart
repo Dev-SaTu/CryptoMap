@@ -1,5 +1,7 @@
+import 'package:cryptomap/api_partnership.dart';
 import 'package:cryptomap/line_chart_sample.dart';
 import 'package:cryptomap/pie_chart_sample.dart';
+import 'package:cryptomap/report.dart';
 import 'package:cryptomap/svg_icon.dart';
 import 'package:cryptomap/synctree.dart';
 import 'package:cryptomap/ticker.dart';
@@ -47,18 +49,19 @@ class _MyHomePageState extends State<MyHomePage> {
   final _chatController = TextEditingController();
   final _focusNode = FocusNode();
   late List<Ticker> tickers = [];
-  late List<GlobalKey> expansionTileKeys = [];
+  late List<double> scores = [];
+  late List<List<List<dynamic>>> candlesticks = [];
   final ScrollController _scrollController = ScrollController();
   Balance? balance;
   List<String> chatHistory = [];
   bool _chatEnabled = true;
-  int? expandedTileIndex;
 
   Future<void> _loadTickers() async {
     final List<Ticker> loadedTickers = await requestTickerAll();
     setState(() {
       tickers = loadedTickers;
-      expansionTileKeys = List.generate(tickers.length, (index) => GlobalKey());
+      scores = List.generate(tickers.length, (index) => 1.0);
+      candlesticks = List.generate(tickers.length, (index) => List.generate(10, (index) => List.generate(6, (index) => 0.0)));
     });
   }
 
@@ -151,15 +154,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       PieChartSectionData(color: Colors.greenAccent, title: 'BCH', value: 0.1, showTitle: false),
                       PieChartSectionData(color: Colors.blueAccent, title: 'TRX', value: 0.1, showTitle: false),
                     ]),
-                    const Text('Comment 1 : 내용은 이렇게 출력됩니다.', style: TextStyle(color: Colors.white)),
-                    const Text('Comment 2 : 내용은 이렇게 출력됩니다.', style: TextStyle(color: Colors.white)),
+                    Text('BTC 40.0% | ${NumberFormat("#,### 원").format((balance?.balance ?? 0.0) * 0.1 * 0.4)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text('ETH 20.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text('XRP 20.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text('BCH 10.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.1)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text('TRX 10.0% | ${NumberFormat("#,### 원").format(balance?.balance ?? 0.0 * 0.1 * 0.1)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
               const SizedBox(height: 16.0),
               TitleContainer(
                 title: '추세 분석',
-                subtitle: '기술적 분석을 이용한 가상화폐 가격 추이를 알아보세요.',
+                subtitle: '기술적 분석을 이용한 가상화폐 가격 추이를 알아보세요.\n1.0 이상',
                 widget: Scrollbar(
                   controller: _scrollController,
                   thumbVisibility: true,
@@ -177,12 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
                         final ticker = tickers[index];
-                        /*return ScoreBox(
-                        symbol: ticker.symbol,
-                        score: double.parse(ticker.closingPrice),
-                      );*/
                         return ExpansionTile(
-                          key: expansionTileKeys[index],
                           title: Text(ticker.symbol, style: const TextStyle(color: Colors.white)),
                           subtitle: Text(NumberFormat('#,###.#### 원').format(double.parse(ticker.closingPrice)), style: const TextStyle(color: Colors.white70)),
                           leading: Container(
@@ -196,36 +197,25 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             child: SvgTile(url: 'https://raw.githubusercontent.com/Cryptofonts/cryptoicons/master/SVG/${ticker.symbol.toLowerCase()}.svg'),
                           ),
-                          // trailing: const Icon(Icons.keyboard_arrow_right, color: Colors.white),
                           collapsedIconColor: Colors.white,
-                          initiallyExpanded: expandedTileIndex == index,
-                          onExpansionChanged: (isExpanded) {
-                            if (isExpanded) {
-                              setState(() {
-                                expandedTileIndex = index;
-                              });
-
-                              final RenderBox renderBox = expansionTileKeys[index].currentContext!.findRenderObject()! as RenderBox;
-                              final size = renderBox.size;
-
-                              _scrollController.animateTo(
-                                index * size.height,
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeInOut,
-                              );
-                            } else if (expandedTileIndex == index) {
-                              setState(() {
-                                expandedTileIndex = null;
-                              });
-                            }
-                          },
-                          children: const <Widget>[
+                          children: <Widget>[
                             Row(
                               children: <Widget>[
-                                Expanded(child: LineChartSample2()),
+                                Text(NumberFormat('#.##').format(scores[index]), style: const TextStyle(color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.bold)),
+                                const SizedBox(width: 16.0),
+                                Expanded(child: LineChartSample2(data: candlesticks[index])),
                               ],
                             ),
                           ],
+                          onExpansionChanged: (value) async {
+                            if (value) {
+                              final scoreData = await requestSymbolScore(ticker.symbol);
+                              setState(() {
+                                scores[index] = scoreData['score'];
+                                candlesticks[index] = (scoreData['candlestick'] as List<dynamic>).cast<List<dynamic>>();
+                              });
+                            }
+                          },
                         );
                       },
                       itemCount: tickers.length,
@@ -270,7 +260,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: const TextStyle(color: Colors.white, fontSize: 12.0),
                           decoration: InputDecoration(
                             icon: _chatEnabled ? null : const CircularProgressIndicator(),
-                            hintText: _chatEnabled ? '무엇이든 물어보세요.' : '답변을 생각하고 있어요.',
+                            hintText: _chatEnabled ? '어드바이저에게 무엇이든 물어보세요.' : '답변을 생각하고 있어요.',
                             hintStyle: const TextStyle(color: Colors.grey, fontSize: 12.0),
                             suffix: IconButton(onPressed: () => _requestAdvise(), icon: const Icon(Icons.send, color: Colors.white)),
                           ),
@@ -283,13 +273,13 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 16.0),
               TitleContainer(
                 title: '시장 보고서',
-                subtitle: '안녕하세용',
+                subtitle: '매일 새롭게 작성되는 보고서를 읽어보세요!',
                 widget: Row(
                   children: <Widget>[
                     TextButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.more, color: Colors.white),
-                      label: const Text('자세히 알아보기', style: TextStyle(color: Colors.white)),
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportPage())),
+                      icon: const Icon(Icons.newspaper, color: Color.fromRGBO(253, 111, 34, 1.0)),
+                      label: const Text('오늘의 시장 보고서 읽어보기', style: TextStyle(color: Color.fromRGBO(253, 111, 34, 1.0))),
                     ),
                   ],
                 ),
@@ -297,13 +287,13 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 16.0),
               TitleContainer(
                 title: 'API 제공',
-                subtitle: '안녕하세용',
+                subtitle: '제휴를 맺고 CryptoMap의 API를 사용해보세요!',
                 widget: Row(
                   children: <Widget>[
                     TextButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.more, color: Colors.white),
-                      label: const Text('자세히 알아보기', style: TextStyle(color: Colors.white)),
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const APIPartnershipPage())),
+                      icon: const Icon(Icons.read_more, color: Color.fromRGBO(253, 111, 34, 1.0)),
+                      label: const Text('자세히 알아보기', style: TextStyle(color: Color.fromRGBO(253, 111, 34, 1.0))),
                     ),
                   ],
                 ),

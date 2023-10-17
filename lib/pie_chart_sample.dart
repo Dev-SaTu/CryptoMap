@@ -79,9 +79,7 @@ class PieChart2State extends State<PieChartSample2> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: _buildIndicators(),
         ),
-        const SizedBox(
-          width: 28,
-        ),
+        const SizedBox(width: 28),
       ],
     );
   }

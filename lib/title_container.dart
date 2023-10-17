@@ -21,6 +21,7 @@ class TitleContainer extends StatelessWidget {
           Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12.0)),
           const SizedBox(height: 24.0),
           widget,
+          Row(children: <Widget>[Expanded(child: Container())]),
         ],
       ),
     );

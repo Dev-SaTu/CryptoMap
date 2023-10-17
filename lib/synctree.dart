@@ -38,8 +38,22 @@ Future<Balance> requestKB() async {
   return balance;
 }
 
+Future<Map<String, dynamic>> requestBalancePie(String symbol) async {
+  const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
+  const headers = {
+    'X-Synctree-Plan-ID': '36eb8c28e01bd1980ed862e4bee3cc56bad113293b405933befbb01ff307c909',
+    'X-Synctree-Plan-Environment': 'production',
+    'X-Synctree-Bizunit-Version': '1.0',
+    'X-Synctree-Revision-ID': 'ac626c73f9c0bd005278e658a158319b955021e312c4aa738c61e913657bd4f3',
+    'Content-Type': 'application/json',
+  };
+  final response = await _sendRequest(endpoint, headers, null);
+  final Map<String, dynamic> result = jsonDecode(response);
 
-Future<String> requestSymbolScore(String symbol) async {
+  return result;
+}
+
+Future<Map<String, dynamic>> requestSymbolScore(String symbol) async {
   const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
   const headers = {
     'X-Synctree-Plan-ID': '1410fcf141e9522caf1a3ed7815ac743e4e824c7a74bf6357f940d472fb99f47',
@@ -49,8 +63,10 @@ Future<String> requestSymbolScore(String symbol) async {
     'Content-Type': 'application/json',
   };
   final body = jsonEncode({'symbol': symbol});
+  final response = await _sendRequest(endpoint, headers, body);
+  final Map<String, dynamic> result = jsonDecode(response);
 
-  return await _sendRequest(endpoint, headers, body);
+  return result;
 }
 
 Future<List<Ticker>> requestTickerAll() async {
