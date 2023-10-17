@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cryptomap/balance.dart';
 import 'package:cryptomap/ticker.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,6 +20,24 @@ Future<String> requestAdvise(String message) async {
 
   return content;
 }
+
+Future<Balance> requestKB() async {
+  const endpoint = 'https://seoul.synctreengine.com/plan/entrance';
+  const headers = {
+    'X-Synctree-Plan-ID': '25f87cd5f9c6bb4562ead8defc035b2767abb6acaf64ac4d35e6a5561ea98c87',
+    'X-Synctree-Plan-Environment': 'production',
+    'X-Synctree-Bizunit-Version': '1.0',
+    'X-Synctree-Revision-ID': '759c3b30a5f8586950f94d0e49f2cdf878640203f69aa6592d3a76cc33f4db2b',
+    'Content-Type': 'application/json',
+  };
+
+  final response = await _sendRequest(endpoint, headers, null);
+  final Map<String, dynamic> result = jsonDecode(response);
+  final balance = Balance.fromJson(result);
+
+  return balance;
+}
+
 
 Future<String> requestSymbolScore(String symbol) async {
   const endpoint = 'https://seoul.synctreengine.com/plan/entrance';

@@ -24,10 +24,10 @@ class _LineChartSample2State extends State<LineChartSample2> {
   LineChartData mainData() {
     return LineChartData(
       gridData: FlGridData(
-        show: true,
+        show: false,
         drawVerticalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 1,
+        horizontalInterval: 1.0,
+        verticalInterval: 1.0,
         getDrawingHorizontalLine: (value) => const FlLine(color: Colors.black, strokeWidth: 1),
         getDrawingVerticalLine: (value) => const FlLine(color: Colors.black, strokeWidth: 1),
       ),

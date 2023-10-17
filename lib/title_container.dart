@@ -11,7 +11,7 @@ class TitleContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
-      decoration: const BoxDecoration(color: Color.fromRGBO(24, 24, 26, 1.0)),
+      decoration: BoxDecoration(color: const Color.fromRGBO(23, 21, 26, 1.0), borderRadius: BorderRadius.circular(16.0)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,

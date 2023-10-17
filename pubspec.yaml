@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^1.1.0
   fl_chart: ^0.64.0
+  intl: ^0.18.1
+  flutter_svg: ^2.0.7
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +67,7 @@ flutter:
     - assets/images/logo_grey.png
     - assets/images/logo_orange.png
     - assets/images/synctree.jpg
+    - assets/images/synctree_black.png
 
   fonts:
     - family: Pretendard
